@@ -30,6 +30,15 @@ class column_def():
 
         return f"{column_name} {self.data_type}"
 
+    def get_column_name(self):
+
+        if self.modified_col_name:
+            column_name = self.modified_col_name
+        else:
+            column_name = self.get_formatted_col_name()
+
+        return f"{column_name}"
+
     def get_formatted_col_name(self):
         """
         Format the source column name
@@ -115,4 +124,26 @@ class postgres_table():
 
         return f"""
         SELECT COUNT(*) FROM {self.full_table_name}
+        """
+
+    def query_insert_from_list(self, data_list):
+        """
+        Generate query to insert data into a table in the database
+
+        data_list is expected to be a list of records where each
+        item is a tuple of a row to be inserted
+        """
+        column_str = ",".join(
+            [column_item.get_column_name() for column_item in self.column_list]
+        )
+
+        value_str = ",\n".join(
+            [str(data_item) for data_item in data_list]
+        )
+
+        return f"""
+        INSERT INTO {self.full_table_name} ({column_str})
+        VALUES
+            {value_str}
+        ;
         """
