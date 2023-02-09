@@ -60,10 +60,14 @@ with DAG(
         sql=temp_table.query_create_table(),
     )
 
-    task_count_rows_before = PostgresOperator(
+    task_count_rows_before = PythonOperator(
         task_id="count_rows_before",
-        postgres_conn_id=postgres_conn_id,
-        sql=temp_table.query_count_rows(),
+        python_callable=execute_query_postgres,
+        op_kwargs={
+            "conn_id": postgres_conn_id,
+            "query_str": temp_table.query_count_rows(),
+            "print_results": True,
+        }
     )
 
     task_insert_data = PostgresOperator(
@@ -71,12 +75,6 @@ with DAG(
         postgres_conn_id=postgres_conn_id,
         sql=temp_table.query_insert_from_list(get_sample_data()),
     )
-
-    # task_count_rows_after = PostgresOperator(
-    #     task_id="count_rows_after",
-    #     postgres_conn_id=postgres_conn_id,
-    #     sql=temp_table.query_count_rows(),
-    # )
 
     task_count_rows_after = PythonOperator(
         task_id="count_rows_after",
