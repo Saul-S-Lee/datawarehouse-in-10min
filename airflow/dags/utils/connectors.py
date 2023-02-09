@@ -7,6 +7,10 @@ def execute_query_postgres(
     return_results=False,
     pandas_kwargs=None
 ):
+    """
+    Executes sql query to a Postgres data base and fetches the results
+    """
+
     import pandas as pd
 
     postgres = PostgresHook(postgres_conn_id=conn_id)

@@ -1,5 +1,3 @@
-
-
 class column_def():
     """
     Defines the columns for postgres database

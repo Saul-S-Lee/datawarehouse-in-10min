@@ -2,28 +2,23 @@
 Test DAG to load data into postgres
 """
 import datetime as dt
-from textwrap import dedent
 
 from airflow.providers.postgres.operators.postgres import PostgresOperator
 
 from utils.connectors import execute_query_postgres
 from utils.db_check import column_list, db_check_table
 
-# The DAG object; we'll need this to instantiate a DAG
 from airflow import DAG
 
-# Operators; we need this to operate!
 from airflow.operators.python import PythonOperator
 
-# [END import_module]
-
+# define variables
 postgres_conn_id = "postgres_dwh"
 
 table_name = "db_check"
 temp_table = db_check_table("airflow_temp", table_name, column_list)
 
 
-# [START instantiate_dag]
 with DAG(
     'etl_db_check',
     default_args={'retries': 2},
