@@ -6,6 +6,7 @@ from textwrap import dedent
 
 from airflow.providers.postgres.operators.postgres import PostgresOperator
 
+from utils.connectors import execute_query_postgres
 from utils.db_check import column_list, db_check_table
 
 # The DAG object; we'll need this to instantiate a DAG
@@ -33,33 +34,13 @@ with DAG(
     tags=['test'],
 ) as dag:
 
-    # [START extract_function]
-    def extract(**kwargs):
-        ti = kwargs['ti']
-        data_string = '{"1001": 301.27, "1002": 433.21, "1003": 502.22}'
-        ti.xcom_push('order_data', data_string)
+    def get_sample_data():
 
-    # [END extract_function]
-
-    data_to_insert = [
-        ("1001", 301.27),
-        ("1002", 433.21),
-        ("1003", 502.22),
-    ]
-
-    # [START main_flow]
-    task_extract = PythonOperator(
-        task_id='extract',
-        python_callable=extract,
-    )
-    task_extract.doc_md = dedent(
-        """\
-    #### Extract task
-    A simple Extract task to get data ready for the rest of the data pipeline.
-    In this case, getting data is simulated by reading from a hardcoded JSON string.
-    This data is then put into xcom, so that it can be processed by the next task.
-    """
-    )
+        return [
+            ("10102", 3874),
+            ("10103", 2938),
+            ("10104", 938),
+        ]
 
     task_create_temp_schema = PostgresOperator(
         task_id="create_temp_schema",
@@ -79,16 +60,39 @@ with DAG(
         sql=temp_table.query_create_table(),
     )
 
+    task_count_rows_before = PostgresOperator(
+        task_id="count_rows_before",
+        postgres_conn_id=postgres_conn_id,
+        sql=temp_table.query_count_rows(),
+    )
+
     task_insert_data = PostgresOperator(
         task_id="insert_data_to_temp_table",
         postgres_conn_id=postgres_conn_id,
-        sql=temp_table.query_insert_from_list(data_to_insert),
+        sql=temp_table.query_insert_from_list(get_sample_data()),
+    )
+
+    # task_count_rows_after = PostgresOperator(
+    #     task_id="count_rows_after",
+    #     postgres_conn_id=postgres_conn_id,
+    #     sql=temp_table.query_count_rows(),
+    # )
+
+    task_count_rows_after = PythonOperator(
+        task_id="count_rows_after",
+        python_callable=execute_query_postgres,
+        op_kwargs={
+            "conn_id": postgres_conn_id,
+            "query_str": temp_table.query_count_rows(),
+            "print_results": True,
+        }
     )
 
     (
-        task_extract
-        >> task_create_temp_schema
+        task_create_temp_schema
         >> task_drop_temp_table
         >> task_create_temp_table
+        >> task_count_rows_before
         >> task_insert_data
+        >> task_count_rows_after
     )
