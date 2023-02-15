@@ -143,7 +143,7 @@ class postgres_table():
         SELECT * FROM {self.full_table_name} LIMIT {limit}
         """
 
-    def query_insert_from_list(self, data_list):
+    def query_insert_template(self):
         """
         Generate query to insert data into a table in the database
 
@@ -154,17 +154,12 @@ class postgres_table():
             [column_item.get_column_name() for column_item in self.column_list]
         )
 
-        value_str = ",\n".join(
-            [f"{data_item}" for data_item in data_list]
-        )
-
-        # replace 'NULL' with just NULL
-        value_str = value_str.replace("\'NULL\'", "NULL")
+        param_str = ",".join(["%s" for _ in range(len(self.column_list))])
 
         return f"""
         INSERT INTO {self.full_table_name} ({column_str})
         VALUES
-            {value_str}
+            ({param_str})
         ;
         """
 

@@ -31,11 +31,10 @@ with DAG(
 
     def get_sample_data():
 
-        return [
-            ("10102", 3874),
-            ("10103", 2938),
-            ("10104", 938),
-        ]
+        return ("10102", 3874)
+            # ("10103", 2938),
+            # ("10104", 938),
+        # ]
 
     task_create_temp_schema = PostgresOperator(
         task_id="create_temp_schema",
@@ -68,7 +67,8 @@ with DAG(
     task_insert_data = PostgresOperator(
         task_id="insert_data_to_temp_table",
         postgres_conn_id=postgres_conn_id,
-        sql=temp_table.query_insert_from_list(get_sample_data()),
+        sql=temp_table.query_insert_template(),
+        parameters=get_sample_data(),
     )
 
     task_count_rows_after = PythonOperator(

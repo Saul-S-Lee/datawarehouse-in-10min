@@ -2,9 +2,12 @@ from airflow.providers.postgres.operators.postgres import PostgresHook
 
 
 def execute_query_postgres(
-    conn_id, query_str,
+    conn_id,
+    query_str,
+    query_val=None,
     print_results=False,
     return_results=False,
+    executemany=False,
 ):
     """
     Executes sql query to a Postgres database. If the query generates
@@ -19,8 +22,14 @@ def execute_query_postgres(
 
     print(query_str)
 
-    # execute the query
-    cursor.execute(query_str)
+    # execute the query, if executemany=true, the executemany method will
+    # be used, and query_val is expected to be a python list of
+    # tuples of row data
+    if executemany:
+        print("Using cursor.executemany()")
+        cursor.executemany(query_str, query_val)
+    else:
+        cursor.execute(query_str, query_val)
 
     # get results if available
     if cursor.description:
