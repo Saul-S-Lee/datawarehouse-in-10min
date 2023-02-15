@@ -32,9 +32,6 @@ with DAG(
     def get_sample_data():
 
         return ("10102", 3874)
-            # ("10103", 2938),
-            # ("10104", 938),
-        # ]
 
     task_create_temp_schema = PostgresOperator(
         task_id="create_temp_schema",
