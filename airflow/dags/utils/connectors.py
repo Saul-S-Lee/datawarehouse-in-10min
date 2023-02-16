@@ -85,3 +85,19 @@ def execute_read_sql_postgres(
 
     if return_results:
         return results
+
+
+def get_json_from_api(url):
+    """
+    Executes an api request and returns the json result
+    """
+
+    import requests
+
+    r = requests.get(url)
+
+    if r.status_code == 200:
+        return r.json()
+    else:
+        print("error fetching results from API")
+        return None
