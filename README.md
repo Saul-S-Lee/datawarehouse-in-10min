@@ -17,6 +17,8 @@ The initial phase of the development will be focused on bring in up an example A
 ## Getting Started
 This repo is setup as a monorepo with each top level folder as a separate miniproject with it's own docker-compose file. The purpose of this setup is to mimick an actual data platform where each component would typically be its own service.
 
+__Note about security:__ This repo meant for local development only and not for production. As usual, please take the appropriate security precautions before deploying to production or exposing any services to internet.
+
 <br>
 
 ### Airflow
@@ -37,7 +39,7 @@ Copy the new Fernet key output and set it as a shell environment variable
 export AIRFLOW__CORE__FERNET_KEY=your_fernet_key
 ```
 
-Run Airflow using docker-compose
+Run Airflow using docker compose
 
 ```
 docker compose up
@@ -53,7 +55,7 @@ To make the data warehouse more self contained, we are setting up a local Postgr
 
 Navigate to the `postgres/` directory
 
-Launch the Postgres database using docker-compose
+Launch the Postgres database using docker compose
 
 ```
 docker compose up
