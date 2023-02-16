@@ -1,5 +1,6 @@
 """
-Test DAG to load data into postgres
+Test DAG to check connection to a postgres database
+and load data into postgres
 """
 import datetime as dt
 
@@ -13,6 +14,7 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 
 # define variables
+# please setup a connection named postgres_dwh to the postgres db to be used
 postgres_conn_id = "postgres_dwh"
 
 table_name = "db_check"
@@ -30,7 +32,6 @@ with DAG(
 ) as dag:
 
     def get_sample_data():
-
         return ("10102", 3874)
 
     task_create_temp_schema = PostgresOperator(
@@ -51,6 +52,8 @@ with DAG(
         sql=temp_table.query_create_table(),
     )
 
+    # This task uses execute_query_postgres() function because
+    # a returned value is required
     task_count_rows_before = PythonOperator(
         task_id="count_rows_before",
         python_callable=execute_query_postgres,
