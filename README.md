@@ -19,8 +19,6 @@ This repo is setup as a monorepo with each top level folder as a separate minipr
 
 __Note about security:__ This repo meant for local development only and not for production. As usual, please take the appropriate security precautions before deploying to production or exposing any services to internet.
 
-<br>
-
 ### Airflow
 
 Set up a new Fernet key [Initial setup only]
@@ -47,8 +45,6 @@ docker compose up
 
 Browse to localhost:8080 to make sure Airflow has launched correctly. The default login is airflow and password is airflow.
 
-<br>
-
 ### Postgres Database
 
 To make the data warehouse more self contained, we are setting up a local Postgres database to store the data from the Airflow pipelines. In principle, the Airflow service can connect to any other local or cloud hosted Postgres database as long as the database is set up as a connection in Airflow.
@@ -60,8 +56,6 @@ Launch the Postgres database using docker compose
 ```
 docker compose up
 ```
-
-<br>
 
 ### Setup an Airflow connection to the Postgres database
 
@@ -78,8 +72,6 @@ Add a new connection called `postgres_dwh` with the following settings:
 - Port = `15432` (feel free to set this to another port here and in the docker-compose.yaml file)
 
 Click Save
-
-<br>
 
 ### Run the example pipelines
 There are some example Airflow pipelines in the (airflow/dags) folder.
