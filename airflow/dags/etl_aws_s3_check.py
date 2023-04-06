@@ -5,12 +5,14 @@ Adapted from:
 https://github.com/apache/airflow/blob/providers-amazon/7.3.0/tests/system/providers/amazon/aws/example_s3.py
 
 This DAG assumes
-- AWS credentials are setup either using the aws_default Airflow connection
-or other methods described here
+- AWS credentials are setup either using the aws_default
+    Airflow connection or other methods described here
 https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/aws.html
 - Create a new staging bucket in S3
-- The AWS credentials used has the correct permissions to write to the staging bucket
-- Add the name of the new staging bucket as an Airflow variable staging_bucket_name
+- The AWS credentials used has the correct permissions to write to the staging
+    bucket
+- Add the name of the new staging bucket as an Airflow variable
+    staging_bucket_name
 """
 
 from datetime import datetime
