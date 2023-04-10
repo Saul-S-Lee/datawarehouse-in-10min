@@ -73,8 +73,28 @@ Add a new connection called `postgres_dwh` with the following settings:
 
 Click Save
 
+### AWS S3 Staging Bucket (Optional)
+
+For more complex workflows, an intermediate cloud staging location (e.g. AWS S3 or Google Cloud Storage) helps to facilitate the movement of data. This is the preferred method as Airflow XComs is not meant for data transfer. This step is marked as optional as it would most likely require 10+ minutes to set up.
+
+The DAGs that do not require an intermediate staging bucket have "no_staging" in the name.
+
+The example DAGs use AWS S3 as the intermediate cloud staging location. But the DAGs can be adapted to use other cloud storage services.
+
+Setting up AWS S3 Bucket 
+- AWS credentials are setup either using the aws_default
+    Airflow connection or other methods described here
+https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/aws.html
+- Create a new staging bucket in S3
+- The AWS credentials used has the correct permissions to write to the     staging bucket
+- Add the name of the new staging bucket as an Airflow variable
+    staging_bucket_name
+
 ### Run the example pipelines
 There are some example Airflow pipelines in the (airflow/dags) folder.
+
+__etl_aws_s3_check__ <br>
+Run this pipeline to check the connection with an AWS S3 bucket
 
 __etl_db_check__ <br>
 Run this pipeline to check the connection with the Postgres database
