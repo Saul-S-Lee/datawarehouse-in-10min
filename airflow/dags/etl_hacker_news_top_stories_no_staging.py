@@ -18,7 +18,7 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 
 with DAG(
-    'etl_hacker_news_top_stories',
+    'etl_hacker_news_top_stories_no_staging',
     default_args={'retries': 2},
     description='Extract and store Hacker News Top Stories',
     schedule_interval="5 */1 * * *",
