@@ -1,3 +1,4 @@
+from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.providers.postgres.operators.postgres import PostgresHook
 
 
@@ -101,3 +102,21 @@ def get_json_from_api(url):
     else:
         print("error fetching results from API")
         return None
+
+
+class aws_helper():
+
+    def __init__(self, conn_id="aws_default"):
+        self.conn_id = conn_id
+
+    def write_csv_to_s3(self, df, s3_bucket_name, s3_key, encoding="UTF-8"):
+        from io import BytesIO
+
+        s3 = S3Hook(self.conn_id)
+
+        # write to BytesIO object to be uploaded by boto3
+        buffer = BytesIO(
+            df.to_csv(index=False).encode(encoding)
+        )
+
+        s3.load_file_obj(buffer, key=s3_key, bucket_name=s3_bucket_name)
