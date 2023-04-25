@@ -1,3 +1,4 @@
+from airflow.providers.amazon.aws.hooks.base_aws import AwsBaseHook
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.providers.postgres.operators.postgres import PostgresHook
 
@@ -109,6 +110,22 @@ class aws_helper():
     def __init__(self, conn_id="aws_default"):
         self.conn_id = conn_id
 
+    def get_obj_from_s3(self, s3_bucket_name, s3_key):
+        from io import StringIO
+
+        s3 = S3Hook(self.conn_id)
+
+        print(s3_bucket_name)
+        print(s3_key)
+
+        # get object
+        buffer = s3.read_key(key=s3_key, bucket_name=s3_bucket_name)
+
+        # convert to a StringIO object
+        buffer_obj = StringIO(buffer)
+
+        return buffer_obj
+
     def write_csv_to_s3(self, df, s3_bucket_name, s3_key, encoding="UTF-8"):
         from io import BytesIO
 
@@ -120,3 +137,38 @@ class aws_helper():
         )
 
         s3.load_file_obj(buffer, key=s3_key, bucket_name=s3_bucket_name)
+
+    def read_csv_froms_s3(self, s3_bucket_name, s3_key):
+        import pandas as pd
+
+        # write to BytesIO object to be uploaded by boto3
+        file_obj = self.get_obj_from_s3(s3_bucket_name, s3_key)
+
+        if file_obj:
+            df = pd.read_csv(file_obj)
+
+        return df
+
+
+def run_preprocess(
+    conn_id,
+    source_s3_bucket_name,
+    source_s3_key,
+    dest_s3_bucket_name,
+    dest_s3_key,
+    preprocess_fun,
+    preprocess_kwargs=None,
+):
+
+    aws_client = aws_helper(conn_id)
+
+    # retrieve the source file
+    df = aws_client.read_csv_froms_s3(source_s3_bucket_name, source_s3_key)
+
+    # run preprocessing
+    df = preprocess_fun(df, **preprocess_kwargs or {})
+
+    # write preprocessed output to destination
+    aws_client.write_csv_to_s3(df, dest_s3_bucket_name, dest_s3_key)
+
+    return dest_s3_key
