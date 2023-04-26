@@ -99,5 +99,11 @@ Run this pipeline to check the connection with an AWS S3 bucket
 __etl_db_check__ <br>
 Run this pipeline to check the connection with the Postgres database
 
+
+__etl_hacker_news_top_stories_no_staging__ <br>
+This version does not require an AWS S3 intermediate staging bucket. Use this version for fast start up.
+Run this pipeline to start extracting and logging the top story ids from [Hacker News](https://news.ycombinator.com/).
+
 __etl_hacker_news_top_stories__ <br>
+This version requires an AWS S3 intermediate staging bucket.
 Run this pipeline to start extracting and logging the top story ids from [Hacker News](https://news.ycombinator.com/).
