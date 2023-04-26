@@ -1,4 +1,3 @@
-from airflow.providers.amazon.aws.hooks.base_aws import AwsBaseHook
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.providers.postgres.operators.postgres import PostgresHook
 
@@ -172,3 +171,36 @@ def run_preprocess(
     aws_client.write_csv_to_s3(df, dest_s3_bucket_name, dest_s3_key)
 
     return dest_s3_key
+
+
+def load_from_s3_to_postgres(
+    aws_conn_id,
+    source_s3_bucket_name,
+    source_s3_key,
+    postgres_conn_id,
+    query_insert_template,
+):
+    """
+    Loads data from a csv to a postgres database table
+    """
+
+    import numpy as np
+
+    aws_client = aws_helper(aws_conn_id)
+
+    # retrieve the source file
+    df = aws_client.read_csv_froms_s3(source_s3_bucket_name, source_s3_key)
+
+    # convert the np.nan values to None
+    df.replace({np.NaN: None}, inplace=True)
+
+    # convert dataframe to list of tuples
+    data_list = df.to_records(index=False).tolist()
+
+    # execute query
+    execute_query_postgres(
+        postgres_conn_id,
+        query_insert_template,
+        data_list,
+        executemany=True,
+    )
