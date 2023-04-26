@@ -155,6 +155,7 @@ def run_preprocess(
     source_s3_key,
     dest_s3_bucket_name,
     dest_s3_key,
+    columns,
     preprocess_fun,
     preprocess_kwargs=None,
 ):
@@ -167,11 +168,36 @@ def run_preprocess(
     # run preprocessing
     df = preprocess_fun(df, **preprocess_kwargs or {})
 
+    # validate the columns and order
+    df = validate_columns(df, columns)
+
     # write preprocessed output to destination
     aws_client.write_csv_to_s3(df, dest_s3_bucket_name, dest_s3_key)
 
     return dest_s3_key
 
+
+def validate_columns(df, columns):
+
+    # fill in missing columns
+    df = fill_missing_columns(df, columns)
+
+    # get required columns in order
+    df = df[columns]
+
+    return df
+
+
+def fill_missing_columns(df, columns):
+
+    # check if the column exists in the dataframe, if not 
+    # add the column and fill with empty values
+    for cur_col in columns:
+        if cur_col not in df.columns:
+            print(f"{cur_col} not in the dataset, adding placeholder column")
+            df[cur_col] = ""
+    
+    return df
 
 def load_from_s3_to_postgres(
     aws_conn_id,
