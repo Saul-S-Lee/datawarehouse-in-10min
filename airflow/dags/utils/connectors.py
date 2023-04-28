@@ -88,6 +88,14 @@ def execute_read_sql_postgres(
         return results
 
 
+def check_file(file):
+    if file != "None":
+        print(file)
+        return True
+    else:
+        return False
+
+
 def get_json_from_api(url):
     """
     Executes an api request and returns the json result
@@ -231,3 +239,34 @@ def load_from_s3_to_postgres(
         data_list,
         executemany=True,
     )
+
+
+# define functions that will be used by tasks in the DAG
+def sql_to_s3(
+    aws_conn_id,
+    dest_s3_bucket_name,
+    dest_s3_key,
+    postgres_conn_id,
+    query_string,
+):
+    """
+    Extracts data from a sql query and saves result to S3
+    """
+
+    aws_client = aws_helper(aws_conn_id)
+
+    # extract from query
+    df = execute_query_postgres(
+        postgres_conn_id,
+        query_string,
+        return_results=True,
+    )
+
+    if len(df) > 0:
+        aws_client.write_csv_to_s3(
+            df,
+            dest_s3_bucket_name,
+            dest_s3_key,
+        )
+
+        return dest_s3_key
