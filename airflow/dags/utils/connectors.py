@@ -196,8 +196,9 @@ def fill_missing_columns(df, columns):
         if cur_col not in df.columns:
             print(f"{cur_col} not in the dataset, adding placeholder column")
             df[cur_col] = ""
-    
+
     return df
+
 
 def load_from_s3_to_postgres(
     aws_conn_id,
