@@ -219,3 +219,44 @@ class postgres_table():
             is_new = 1
         ;
         """
+
+    def query_load_new_ids(self, source_table):
+        """
+        Generate query to insert data into a table in the database
+
+        with new ids only.
+        """
+        column_str = ",".join(
+            [column_item.get_column_name() for column_item in self.column_list]
+        )
+        column_str += ",etl_time"
+
+        temp_column_str = ",".join(
+            [f"temp.{column_item.get_column_name()}" for column_item in self.column_list]
+        )
+        temp_column_str += ",etl_time"
+
+        return f"""
+        INSERT INTO {self.full_table_name} ({column_str})
+
+        WITH prod_tbl AS (
+            SELECT
+                DISTINCT {self.checkpoint_id_col}
+            FROM
+                {self.full_table_name}
+        ),
+        labeled_new_tbl AS (
+            SELECT
+                {temp_column_str}
+            FROM
+                {source_table.full_table_name} AS temp
+            WHERE
+                temp.{self.checkpoint_id_col} NOT IN
+                (SELECT {self.checkpoint_id_col} FROM prod_tbl)
+        )
+        SELECT
+            {column_str}
+        FROM
+            labeled_new_tbl
+        ;
+        """

@@ -172,7 +172,7 @@ with DAG(
     task_load_updated_data = PostgresOperator(
         task_id="load_updated_data",
         postgres_conn_id=postgres_conn_id,
-        sql=prod_table.query_load_updated_data(temp_table),
+        sql=prod_table.query_load_new_ids(temp_table),
     )
 
     task_inspect_data = PythonOperator(
