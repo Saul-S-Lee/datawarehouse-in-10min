@@ -85,6 +85,7 @@ with DAG(
                 dt.datetime.now(), '%Y-%m-%d %H:%M:%S'
             )
 
+            # parse the data into a records format
             data_list = parse_top_stories(top_stories_list, date_str)
 
             df = pd.DataFrame(
