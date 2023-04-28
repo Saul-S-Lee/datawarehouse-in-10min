@@ -12,6 +12,7 @@ from airflow.providers.postgres.operators.postgres import PostgresOperator
 
 from utils.connectors import (
     aws_helper,
+    check_file,
     get_json_from_api,
     execute_query_postgres,
     load_from_s3_to_postgres,
@@ -105,12 +106,6 @@ with DAG(
 
     def preprocess(df):
         return df
-
-    def check_file(file):
-        if file:
-            return True
-        else:
-            return False
 
     task_extract_from_source = PythonOperator(
         task_id="extract_from_source",

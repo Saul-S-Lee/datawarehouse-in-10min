@@ -88,6 +88,14 @@ def execute_read_sql_postgres(
         return results
 
 
+def check_file(file):
+    if file != "None":
+        print(file)
+        return True
+    else:
+        return False
+
+
 def get_json_from_api(url):
     """
     Executes an api request and returns the json result
