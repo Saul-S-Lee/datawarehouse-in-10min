@@ -5,7 +5,7 @@ source_column_top_stories = [
     column_def("event_timestamp", "TIMESTAMP"),
     column_def("event_id", "VARCHAR(36)"),
     column_def("top_stories", "VARCHAR(10000)"),
-    column_def("post_processed_timestamp", "TIMESTAMP"),
+    column_def("story_rank", "VARCHAR(100)"),
 ]
 
 # define any additional columns from preprocessing
