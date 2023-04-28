@@ -17,7 +17,9 @@ from utils.connectors import (
     load_from_s3_to_postgres,
     run_preprocess,
 )
-from utils.hackernews import column_top_stories, hacker_news_top_stories_table
+from utils.hackernews import (
+    column_top_stories, hacker_news_top_stories_table, parse_top_stories
+)
 
 from airflow import DAG
 from airflow.models import Variable
@@ -69,7 +71,6 @@ with DAG(
         Saves the ids as csv files on S3
         """
         import pandas as pd
-        import uuid
 
         aws_client = aws_helper(conn_id)
 
@@ -84,12 +85,8 @@ with DAG(
                 dt.datetime.now(), '%Y-%m-%d %H:%M:%S'
             )
 
-            # generate a random unique for this entry
-            event_id = uuid.uuid4()
-
-            data_list = [
-                (date_str, event_id, str(top_stories_list), None)
-            ]
+            # parse the data into a records format
+            data_list = parse_top_stories(top_stories_list, date_str)
 
             df = pd.DataFrame(
                 data_list,

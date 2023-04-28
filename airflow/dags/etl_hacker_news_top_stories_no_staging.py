@@ -11,7 +11,9 @@ import datetime as dt
 from airflow.providers.postgres.operators.postgres import PostgresOperator
 
 from utils.connectors import execute_query_postgres, get_json_from_api
-from utils.hackernews import column_top_stories, hacker_news_top_stories_table
+from utils.hackernews import (
+    column_top_stories, hacker_news_top_stories_table, parse_top_stories
+)
 
 from airflow import DAG
 
@@ -30,16 +32,19 @@ with DAG(
     # define variables
     postgres_conn_id = "postgres_dwh"
 
-    table_name = "top_stories"
-    temp_table = hacker_news_top_stories_table("airflow_temp", table_name, column_top_stories)
-    prod_table = hacker_news_top_stories_table("hacker_news", table_name, column_top_stories)
+    table_name = "top_stories_no_staging"
+    temp_table = hacker_news_top_stories_table(
+        "airflow_temp", table_name, column_top_stories
+    )
+    prod_table = hacker_news_top_stories_table(
+        "hacker_news", table_name, column_top_stories
+    )
 
     def extract_and_load(conn_id):
         """
         Extracts the top story ids by querying the hacker news API
         Loads the data into the database
         """
-        import uuid
 
         # api instructions from https://github.com/HackerNews/API
         url = 'https://hacker-news.firebaseio.com/v0/topstories.json'
@@ -49,12 +54,8 @@ with DAG(
         # generate current timestamp
         date_str = dt.datetime.strftime(dt.datetime.now(), '%Y-%m-%d %H:%M:%S')
 
-        # generate a random unique for this entry
-        event_id = uuid.uuid4()
-
-        data_list = [
-            (date_str, event_id, str(top_stories_list), None)
-        ]
+        # parse the data into a records format
+        data_list = parse_top_stories(top_stories_list, date_str)
 
         execute_query_postgres(
             conn_id,
