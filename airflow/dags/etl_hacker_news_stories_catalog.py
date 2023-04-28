@@ -7,11 +7,10 @@ import os
 from airflow.providers.postgres.operators.postgres import PostgresOperator
 
 from utils.connectors import (
-    aws_helper,
-    get_json_from_api,
     check_file,
     execute_query_postgres,
     load_from_s3_to_postgres,
+    sql_to_s3,
     run_preprocess,
 )
 from utils.hackernews import (
@@ -69,43 +68,13 @@ with DAG(
         preprocessed_prefix_name, preprocessed_file_name
     )
 
-    # define functions that will be used by tasks in the DAG
-    def extract(
-            aws_conn_id,
-            dest_s3_bucket_name,
-            dest_s3_key,
-            postgres_conn_id,
-            query_string,
-    ):
-        """
-        Extracts data from a sql query and saves result to S3
-        """
-
-        aws_client = aws_helper(aws_conn_id)
-
-        # extract from query
-        df = execute_query_postgres(
-            postgres_conn_id,
-            query_string,
-            return_results=True,
-        )
-
-        if len(df) > 0:
-            aws_client.write_csv_to_s3(
-                df,
-                dest_s3_bucket_name,
-                dest_s3_key,
-            )
-
-            return dest_s3_key
-
     def preprocess(df):
         df["post_processing_timestamp"] = None
         return df
 
     task_extract_from_source = PythonOperator(
         task_id="extract_from_source",
-        python_callable=extract,
+        python_callable=sql_to_s3,
         op_kwargs={
             "aws_conn_id": aws_conn_id,
             "dest_s3_bucket_name": raw_bucket_name,
